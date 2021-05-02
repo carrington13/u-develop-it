@@ -27,7 +27,12 @@ const db = mysql.createConnection(
 // // GET a single candidate
 app.get('/api/candidate/:id', (req, res) => {
   // sql query call
-  const sql= `SELECT * FROM candidates WHERE id = ?`;
+  const sql= `SELECT candidates.*, parties.name
+  AS party_name
+  FROM candidates
+  LEFT JOIN parties
+  ON candidates.party_id = parties.id
+  WHERE candidates.id = ?`;
   // parameters passed from user
   const params = [req.params.id];
 
@@ -46,7 +51,7 @@ app.get('/api/candidate/:id', (req, res) => {
 });
 
 // // Create a candidate
-app.post('api/candidate', ({ body }), res => {
+app.post('api/candidate', ({ body }, res) => {
   const errors = inputCheck(body, 'first_name', 'last_name', 'industry_connected');
   if (errors) {
     res.status(400).json({ error: errors });
@@ -68,17 +73,7 @@ app.post('api/candidate', ({ body }), res => {
       })
     })
 });
-// const sql = `INSERT INTO candidates (id, first_name, last_name, industry_connected)
-//                 VALUES (?,?,?,?)`;
 
-// const params = [1, 'Ronald', 'Firbank', 1];
-
-// db.query(sql, params, (err, result) => {
-//     if (err) {
-//     console.log(err);
-//     }
-//     console.log(result);
-// });
 
 // Delete a candidate
 app.delete('/api/candidate/:id', (req, res) => {
@@ -105,7 +100,11 @@ app.delete('/api/candidate/:id', (req, res) => {
 
 // Get all candidates
 app.get('/api/candidates', (req, res) => {
-    const sql = `SELECT * FROM candidates`;
+    const sql = `SELECT candidates.*, parties.name 
+    AS party_name 
+    FROM candidates 
+    LEFT JOIN parties 
+    ON candidates.party_id = parties.id`;
   
     db.query(sql, (err, rows) => {
       if (err) {
